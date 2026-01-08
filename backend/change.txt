@@ -1,0 +1,10 @@
+logout将请求方法从get修改为post
+update_course中删除了修改teacher_id的功能
+save_progress和get_progress中将请求和返回参数中的student_id改为user_id,且不再有身份验证
+删除了delete_course接口
+所有文件地址前的“/”均被删除
+delete_code将请求参数改为URL查询参数（args），且参数名改为code_id
+update_student_indo请求参数删除introduction
+create_order中无需写body参数
+需要内网穿透工具ngrok才能正常使用支付功能，ngrok使用方法见网上教程，配置好ngrok后修改.env中的ALIPAY_NOTIFY_URL
+评论系统全部重写了一遍，详情见代码
