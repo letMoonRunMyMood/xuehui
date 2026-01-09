@@ -19,7 +19,7 @@
       <div class="search-container" :style="{ visibility: isCourseCenter ? 'hidden' : 'visible' }">
         <input
             v-model="searchValue"
-            type="text"
+            type="link"
             placeholder="输入课程名或讲师名来搜索课程..."
             class="search-input"
             @keyup.enter="handleSearch"
@@ -192,7 +192,6 @@ const loadUserAvatar = async (forceRefresh = false) => {
       const response = await axiosInstance.get(apiUrl, {
         params,
         signal: abortController.signal,
-        timeout: 3000
       })
 
       if (response.data.success) {

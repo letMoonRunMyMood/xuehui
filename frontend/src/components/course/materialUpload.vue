@@ -20,7 +20,7 @@
             <label class="col-label">资料名称：</label>
             <div class="col-control">
               <input
-                  type="text"
+                  type="link"
                   v-model="form.name"
                   placeholder="请输入资料名称"
                   class="form-input"

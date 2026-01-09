@@ -135,7 +135,7 @@
 
                   <!-- 操作按钮 -->
                   <div class="preview-actions">
-                    <el-button type="text" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
+                    <el-button type="link" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
                       新窗口打开
                     </el-button>
                     <el-button type="primary" size="default" @click="downloadResource(previewResourceInfo)">
@@ -160,7 +160,7 @@
 
                   <!-- 操作按钮 -->
                   <div class="preview-actions">
-                    <el-button type="text" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
+                    <el-button type="link" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
                       新窗口打开
                     </el-button>
                     <el-button type="primary" size="default" @click="downloadResource(previewResourceInfo)">
@@ -192,7 +192,7 @@
 
                   <!-- 操作按钮 -->
                   <div class="preview-actions">
-                    <el-button type="text" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
+                    <el-button type="link" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
                       新窗口打开
                     </el-button>
                     <el-button type="primary" size="default" @click="downloadResource(previewResourceInfo)">
@@ -223,7 +223,7 @@
 
                   <!-- 操作按钮 -->
                   <div class="preview-actions">
-                    <el-button type="text" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
+                    <el-button type="link" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
                       新窗口打开
                     </el-button>
                     <el-button type="primary" size="default" @click="downloadResource(previewResourceInfo)">
@@ -239,7 +239,7 @@
 
                   <!-- 操作按钮 -->
                   <div class="preview-actions">
-                    <el-button type="text" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
+                    <el-button type="link" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
                       新窗口打开
                     </el-button>
                     <el-button type="primary" size="default" @click="downloadResource(previewResourceInfo)">
@@ -254,7 +254,7 @@
 
                   <!-- 操作按钮 -->
                   <div class="preview-actions">
-                    <el-button type="text" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
+                    <el-button type="link" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">
                       新窗口打开
                     </el-button>
                     <el-button type="primary" size="default" @click="downloadResource(previewResourceInfo)">
@@ -273,7 +273,7 @@
                   </div>
                   <div class="preview-actions">
                     <el-button type="primary" size="default" @click="downloadResource(previewResourceInfo)">下载文件</el-button>
-                    <el-button type="text" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">新窗口打开</el-button>
+                    <el-button type="link" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">新窗口打开</el-button>
                   </div>
                 </div>
               </div>

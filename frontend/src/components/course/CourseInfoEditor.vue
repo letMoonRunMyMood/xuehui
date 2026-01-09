@@ -98,7 +98,7 @@
                 <div class="image-preview-wrapper">
                   <img :src="newCoverUrl" alt="封面预览" class="preview-image" />
                   <el-button
-                    type="text"
+                    type="link"
                     class="remove-btn"
                     icon="CircleClose"
                     @click.stop="removeNewCover"
@@ -141,8 +141,9 @@
   <el-dialog
     v-model="cropDialogVisible"
     title="裁剪封面图"
-    width="500px"
-    top="5vh"
+    width="800px"  
+    top="10vh"     
+    center       
     :before-close="handleCropClose"
   >
     <div class="cropper-container">
@@ -151,8 +152,8 @@
         :img="cropImgUrl"
         :info="true"
         :auto-crop="true"
-        :auto-crop-width="400"
-        :auto-crop-height="225"
+        :auto-crop-width="640" 
+        :auto-crop-height="360" 
         :fixed-box="true"
         :fixed-number="[16, 9]"
         :can-move="true"
@@ -368,7 +369,7 @@ const submitCourseInfo = async () => {
 }
 
 onUnmounted(() => {
-  cleanupNewCover(); // [修改] 使用新的清理函数
+  cleanupNewCover(); 
   if (cropImgUrl.value) URL.revokeObjectURL(cropImgUrl.value);
 });
 </script>
@@ -425,6 +426,6 @@ onUnmounted(() => {
   opacity: 1;
 }
 .cropper-container {
-  height: 300px;
+  height: 450px;  
 }
 </style>

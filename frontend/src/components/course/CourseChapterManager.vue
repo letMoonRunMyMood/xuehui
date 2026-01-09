@@ -1,29 +1,29 @@
 <template>
   <el-dialog
-      :model-value="dialogVisible"
-      :title="course.title ? `当前课程: ${course.title}` : '课程章节与资源管理'"
-      class="chapter-resource-dialog"
-      width="1300px"
-      @close="handleClose"
+    :model-value="dialogVisible"
+    :title="course.title ? `当前课程: ${course.title}` : '课程章节与资源管理'"
+    class="chapter-resource-dialog"
+    width="1300px"
+    @close="handleClose"
   >
     <div class="management-container">
       <!-- 左侧章节列表 -->
       <div class="sidebar">
         <div
-            v-for="(chapter, chapterIndex) in courseChapters"
-            :key="chapter.id"
-            class="chapter-item"
-            @click="toggleChapter(chapter)"
-            @dragstart="handleChapterDragStart($event, chapter, chapterIndex)"
-            draggable="true"
-            :class="{
-              'chapter-expanded': chapter.expanded,
-              'chapter-hover': isChapterHovered(chapter.id),
-              'dragging': isDragging && draggedItemType === 'chapter' && draggedChapterIndex === chapterIndex
-            }"
-            :data-id="chapter.id"
-            @mouseenter="handleChapterMouseEnter(chapter.id)"
-            @mouseleave="handleChapterMouseLeave(chapter.id)"
+          v-for="(chapter, chapterIndex) in courseChapters"
+          :key="chapter.id"
+          class="chapter-item"
+          @click="toggleChapter(chapter)"
+          @dragstart="handleChapterDragStart($event, chapter, chapterIndex)"
+          draggable="true"
+          :class="{
+            'chapter-expanded': chapter.expanded,
+            'chapter-hover': isChapterHovered(chapter.id),
+            'dragging': isDragging && draggedItemType === 'chapter' && draggedChapterIndex === chapterIndex
+          }"
+          :data-id="chapter.id"
+          @mouseenter="handleChapterMouseEnter(chapter.id)"
+          @mouseleave="handleChapterMouseLeave(chapter.id)"
         >
           <div class="chapter-header">
             <div class="chapter-info">
@@ -32,29 +32,30 @@
               <span class="resource-count">({{ getResourceCount(chapter.resources) }}个资料)</span>
             </div>
             <el-button
-                type="text"
-                icon="el-icon-edit"
-                size="default"
-                @click.stop="openEditChapter(chapter, chapterIndex)">
+              type="link"
+              icon="el-icon-edit"
+              size="default"
+              @click.stop="openEditChapter(chapter, chapterIndex)"
+            >
               编辑
             </el-button>
           </div>
           <div class="chapter-content" v-if="chapter.expanded">
             <div v-if="chapter.resources.length > 0" class="resource-list">
               <div
-                  v-for="(resource, resIndex) in chapter.resources"
-                  :key="resource.id"
-                  class="resource-item"
-                  @click.stop="loadResourceDetails(resource)"
-                  @dragstart.stop="handleResourceDragStart($event, chapter.id, resource, resIndex)"
-                  draggable="true"
-                  :class="{
-                    'resource-hover': isResourceHovered(resource.id),
-                    'dragging': isDragging && draggedItemType === 'resource' && draggedResourceChapterId === chapter.id && draggedResourceIndex === resIndex
-                  }"
-                  :data-id="resource.id"
-                  @mouseenter="handleResourceMouseEnter(resource.id)"
-                  @mouseleave="handleResourceMouseLeave(resource.id)"
+                v-for="(resource, resIndex) in chapter.resources"
+                :key="resource.id"
+                class="resource-item"
+                @click.stop="loadResourceDetails(resource)"
+                @dragstart.stop="handleResourceDragStart($event, chapter.id, resource, resIndex)"
+                draggable="true"
+                :class="{
+                  'resource-hover': isResourceHovered(resource.id),
+                  'dragging': isDragging && draggedItemType === 'resource' && draggedResourceChapterId === chapter.id && draggedResourceIndex === resIndex
+                }"
+                :data-id="resource.id"
+                @mouseenter="handleResourceMouseEnter(resource.id)"
+                @mouseleave="handleResourceMouseLeave(resource.id)"
               >
                 <div class="resource-header">
                   <div class="resource-title-container">
@@ -100,12 +101,12 @@
                 <div v-if="previewResourceInfo.type === 'video'" class="video-preview">
                   <div class="video-wrapper">
                     <video
-                        ref="videoRef"
-                        controls
-                        width="80%"
-                        style="aspect-ratio: 16/9;"
-                        @error="handleVideoError"
-                        @loadeddata="handleVideoLoaded"
+                      ref="videoRef"
+                      controls
+                      width="80%"
+                      style="aspect-ratio: 16/9;"
+                      @error="handleVideoError"
+                      @loadeddata="handleVideoLoaded"
                     >
                       <source :src="previewResourceInfoUrl" :type="getVideoMimeType(previewResourceInfoUrl)">
                       您的浏览器不支持视频播放
@@ -143,19 +144,19 @@
                       <p>暂无文档链接可预览</p>
                     </div>
                     <iframe
-                        v-else
-                        :src="previewResourceInfoUrl + '?t=' + pdfTimestamp"
-                        width="100%"
-                        height="100%"
-                        class="pdf-iframe"
-                        @load="handlePdfLoad"
-                        @error="handlePdfError"
+                      v-else
+                      :src="previewResourceInfoUrl + '?t=' + pdfTimestamp"
+                      width="100%"
+                      height="100%"
+                      class="pdf-iframe"
+                      @load="handlePdfLoad"
+                      @error="handlePdfError"
                     ></iframe>
                     <div v-if="isPdfLoading" class="loading-pdf">加载中...</div>
                     <div v-else-if="pdfError" class="pdf-error">文档加载失败，请检查文件路径或尝试下载</div>
                   </div>
                 </div>
-                
+
                 <!-- TXT 预览 -->
                 <div v-else-if="previewResourceInfo.type === 'txt'" class="txt-preview">
                   <div v-if="txtContent" class="txt-content">
@@ -173,14 +174,14 @@
                     <span>演示文稿加载失败，请尝试下载查看</span>
                   </div>
                   <VueOfficePptx
-                      v-else
-                      :src="previewResourceInfoUrl"
-                      style="width: 750px; height: 600px; margin: 0 auto;"
-                      @rendered="pptxLoading = false"
-                      @error="handlePptxError"
+                    v-else
+                    :src="previewResourceInfoUrl"
+                    style="width: 750px; height: 600px; margin: 0 auto;"
+                    @rendered="pptxLoading = false"
+                    @error="handlePptxError"
                   />
                   <div class="preview-actions">
-                    <el-button type="text" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">新窗口打开</el-button>
+                    <el-button type="link" size="default" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">新窗口打开</el-button>
                     <el-button type="primary" size="default" @click="downloadResource(previewResourceInfo)">下载文件</el-button>
                   </div>
                 </div>
@@ -193,7 +194,7 @@
                     <p>大小: {{ formatFileSize(previewResourceInfo.size) || '-' }}</p>
                     <div class="preview-actions">
                       <el-button type="primary" size="small" @click="downloadResource(previewResourceInfo)">下载文件</el-button>
-                      <el-button type="text" size="small" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">新窗口打开</el-button>
+                      <el-button type="link" size="small" v-if="previewResourceInfoUrl" @click="openInNewTab(previewResourceInfoUrl)">新窗口打开</el-button>
                     </div>
                   </div>
                 </div>
@@ -208,11 +209,11 @@
     </div>
     <!-- 添加章节弹窗 -->
     <el-dialog
-        :model-value="addChapterVisible"
-        title="添加章节"
-        width="400px"
-        class="small-dialog"
-        @close="addChapterVisible = false"
+      :model-value="addChapterVisible"
+      title="添加章节"
+      width="400px"
+      class="small-dialog"
+      @close="addChapterVisible = false"
     >
       <el-form :model="newChapter" label-width="80px">
         <el-form-item label="章节标题" prop="title">
@@ -231,11 +232,11 @@
     </el-dialog>
     <!-- 编辑章节弹窗 -->
     <el-dialog
-        :model-value="editChapterVisible"
-        title="编辑章节"
-        width="400px"
-        class="small-dialog"
-        @close="editChapterVisible = false"
+      :model-value="editChapterVisible"
+      title="编辑章节"
+      width="400px"
+      class="small-dialog"
+      @close="editChapterVisible = false"
     >
       <el-form :model="editChapter" label-width="80px">
         <el-form-item label="章节标题" prop="title">
@@ -254,12 +255,12 @@
     </el-dialog>
     <!-- 添加资源 - 使用子组件 -->
     <MaterialAddDialog
-        v-if="addResourceChapterId !== null"
-        :visible="addResourceVisible"
-        :chapter-id="addResourceChapterId"
-        :course-id="props.course.id"
-        @update:visible="addResourceVisible = $event"
-        @refresh-data="handleRefreshData"
+      v-if="addResourceChapterId !== null"
+      :visible="addResourceVisible"
+      :chapter-id="addResourceChapterId"
+      :course-id="props.course.id"
+      @update:visible="addResourceVisible = $event"
+      @refresh-data="handleRefreshData"
     />
   </el-dialog>
 </template>
@@ -274,9 +275,8 @@ import MaterialAddDialog from './materialUpload.vue'
 import VueOfficePptx from '@vue-office/pptx'
 import * as mammoth from 'mammoth';
 import * as docx from 'docx';
-import {Document} from "@element-plus/icons-vue";
+import { Document } from "@element-plus/icons-vue";
 
-// [IMPORTANT] 导入路径修正函数
 import { fixCoverPath } from '@/utils/format.js'
 
 const props = defineProps({
@@ -320,6 +320,8 @@ const pptxError = ref('')
 const docContent = ref('')
 const isLoadingDoc = ref(false)
 const docError = ref('')
+const courseCache = ref({})
+const loadChapterLock = ref(false)
 const { Error, Download, CircleClose } = ElementPlusIconsVue
 
 const handleClose = () => {
@@ -344,18 +346,31 @@ const resetData = () => {
 }
 
 const loadChapters = async () => {
-  if (!props.course.id) return
+  if (!props.course.id || loadChapterLock.value) return
+  loadChapterLock.value = true
   try {
-    const response = await axiosInstance.get('/api/course/get-course-detail', { params: { course_id: props.course.id } })
+    if (courseCache.value[props.course.id]) {
+      const cachedData = courseCache.value[props.course.id]
+      courseChapters.value = cachedData
+      emit('update:course', { ...props.course, chapters: cachedData })
+      loadChapterLock.value = false
+      return
+    }
+    const response = await axiosInstance.get('/api/course/get-course-detail', {
+      params: { course_id: props.course.id },
+      timeout: 5000
+    })
     if (response.data.success) {
       const courseData = response.data.data
-      courseChapters.value = (courseData.chapters || []).map(chapter => {
+      const processedChapters = (courseData.chapters || []).map(chapter => {
         const resources = [
           ...(chapter.videos || []).map(video => ({ ...video, type: 'video', file: fixCoverPath(video.file_url), size: video.size || 0 })),
           ...(chapter.documents || []).map(doc => ({ ...doc, type: getFileTypeFromExt(doc.file_url), file: fixCoverPath(doc.file_url), size: doc.size || 0 }))
         ]
         return { ...chapter, expanded: false, resources: normalizeResources(resources) }
       })
+      courseChapters.value = processedChapters
+      courseCache.value[props.course.id] = processedChapters
       emit('update:course', courseData)
     } else {
       ElMessage.error(response.data.message || '获取章节失败')
@@ -363,34 +378,34 @@ const loadChapters = async () => {
   } catch (error) {
     ElMessage.error('网络错误：获取章节数据失败，请重试')
     console.error('[错误] 网络异常:', error)
+  } finally {
+    loadChapterLock.value = false
   }
 }
 
 const getFileTypeFromExt = (url) => {
   if (!url) return 'doc';
   const ext = url.split('.').pop().toLowerCase();
-  const videoExts = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'mpg', 'mpeg'];
-  const docExts = ['doc', 'docx', 'txt', 'pdf', 'rtf', 'wps'];
-  const presentationExts = ['ppt', 'pptx', 'key', 'odp'];
-  if (videoExts.includes(ext)) return 'video';
-  if (presentationExts.includes(ext)) return 'ppt';
-  if (docExts.includes(ext)) return ext === 'pdf' ? 'pdf' : ext === 'txt' ? 'txt' : 'doc';
+  const videoExts = new Set(['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'wmv', 'mpg', 'mpeg']);
+  const docExts = new Set(['doc', 'docx', 'txt', 'pdf', 'rtf', 'wps']);
+  const presentationExts = new Set(['ppt', 'pptx', 'key', 'odp']);
+  if (videoExts.has(ext)) return 'video';
+  if (presentationExts.has(ext)) return 'ppt';
+  if (docExts.has(ext)) return ext === 'pdf' ? 'pdf' : ext === 'txt' ? 'txt' : 'doc';
   return 'doc';
 };
 
 const normalizeResources = (resources) => {
   if (!resources || !Array.isArray(resources)) return []
-  return resources.map(resource => ({ ...resource, type: mapResourceType(resource.type) }))
-}
-
-const mapResourceType = (type) => {
-  const videoTypes = ['mp4', 'mov', 'avi', 'mkv', 'webm', 'video'];
-  const presentationTypes = ['ppt', 'pptx'];
-  const docTypes = ['doc', 'docx', 'pdf', 'txt'];
-  if (videoTypes.includes(type)) return 'video';
-  if (presentationTypes.includes(type)) return 'ppt';
-  if (docTypes.includes(type)) return type === 'pdf' ? 'pdf' : type === 'txt' ? 'txt' : 'doc';
-  return 'doc';
+  const typeMap = new Map([
+    ['mp4', 'video'], ['mov', 'video'], ['avi', 'video'], ['mkv', 'video'], ['webm', 'video'], ['video', 'video'],
+    ['ppt', 'ppt'], ['pptx', 'ppt'],
+    ['doc', 'doc'], ['docx', 'doc'], ['pdf', 'pdf'], ['txt', 'txt']
+  ])
+  return resources.map(resource => ({
+    ...resource,
+    type: typeMap.get(resource.type) || resource.type
+  }))
 }
 
 const isVideoFile = (type) => type === 'video'
@@ -401,12 +416,14 @@ const loadResourceDetails = async (resource) => {
   isLoadingResource.value = true
   resetPreviewState()
   try {
-    let response
-    if (isVideoFile(resource.type)) {
-      response = await axiosInstance.get('/api/course/get-video', { params: { video_id: resource.id } })
-    } else {
-      response = await axiosInstance.get('/api/course/get-document', { params: { document_id: resource.id } })
-    }
+    const url = isVideoFile(resource.type)
+      ? '/api/course/get-video'
+      : '/api/course/get-document'
+    const params = isVideoFile(resource.type)
+      ? { video_id: resource.id }
+      : { document_id: resource.id }
+
+    const response = await axiosInstance.get(url, { params, timeout: 5000 })
     if (response.data.success) {
       const resourceData = response.data.data
       const originalUrl = resourceData.url
@@ -424,7 +441,7 @@ const loadResourceDetails = async (resource) => {
         pptxError.value = ''
       } else if (finalType === 'pdf') {
         isPdfLoading.value = true
-        pdfTimestamp.value = new Date().getTime() // 防止PDF缓存
+        pdfTimestamp.value = new Date().getTime()
       }
     } else {
       previewResourceInfo.value = { ...resource, title: '加载失败', url: '', type: resource.type }
@@ -446,7 +463,7 @@ const loadDocContent = async (url, type) => {
   docContent.value = ''
   docError.value = ''
   try {
-    const response = await axiosInstance.get(url, { responseType: 'arraybuffer' })
+    const response = await axiosInstance.get(url, { responseType: 'arraybuffer', timeout: 8000 })
     const arrayBuffer = response.data
     if (type === 'docx' || url.toLowerCase().endsWith('.docx')) {
       const result = await mammoth.convertToHtml({ arrayBuffer })
@@ -475,7 +492,7 @@ const loadDocContent = async (url, type) => {
 const loadTxtContent = async () => {
   isLoadingTxt.value = true
   try {
-    const response = await axiosInstance.get(previewResourceInfoUrl.value, { responseType: 'text' })
+    const response = await axiosInstance.get(previewResourceInfoUrl.value, { responseType: 'text', timeout: 5000 })
     txtContent.value = response.data
   } catch (error) {
     console.error('Failed to load TXT content:', error)
@@ -528,10 +545,11 @@ const confirmAddChapter = async () => {
     formData.append('title', newChapter.value.title)
     formData.append('course_id', props.course.id)
     formData.append('order', newChapter.value.order)
-    const res = await axiosInstance.post('/api/course/create-chapter', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+    const res = await axiosInstance.post('/api/course/create-chapter', formData, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 5000 })
     if (res.data.success) {
       ElMessage.success('章节添加成功')
       addChapterVisible.value = false
+      delete courseCache.value[props.course.id]
       await loadChapters()
     } else {
       ElMessage.error(res.data.message || '添加章节失败')
@@ -547,20 +565,21 @@ const confirmEditChapter = async () => {
     return
   }
   try {
-    await ElMessageBox.confirm('确定修改该章节？修改后不可恢复', '提示', { 
+    await ElMessageBox.confirm('确定修改该章节？修改后不可恢复', '提示', {
       type: 'warning',
-      confirmButtonText: '确认', // 新增：确认按钮文字
-      cancelButtonText: '取消'   // 新增：取消按钮文字
+      confirmButtonText: '确认',
+      cancelButtonText: '取消'
     })
       .then(async () => {
         const formData = new FormData()
         formData.append('chapter_id', editChapter.value.id)
         formData.append('title', editChapter.value.title)
         formData.append('order', editChapter.value.order)
-        const res = await axiosInstance.patch('/api/course/update-chapter', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        const res = await axiosInstance.patch('/api/course/update-chapter', formData, { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 5000 })
         if (res.data.success) {
           ElMessage.success('章节修改成功')
           editChapterVisible.value = false
+          delete courseCache.value[props.course.id]
           await loadChapters()
         } else {
           ElMessage.error(res.data.message || '修改章节失败')
@@ -622,10 +641,10 @@ const deleteDroppedResource = async () => {
     const resource = chapter?.resources.find(r => r.id === draggedResourceId.value)
     if (!resource) return
     const ext = getFileExtension(resource.type)
-    await ElMessageBox.confirm(`确定删除该${ext}？删除后不可恢复`, '提示', { 
+    await ElMessageBox.confirm(`确定删除该${ext}？删除后不可恢复`, '提示', {
       type: 'warning',
-      confirmButtonText: '确认', // 新增：确认按钮文字
-      cancelButtonText: '取消'   // 新增：取消按钮文字
+      confirmButtonText: '确认',
+      cancelButtonText: '取消'
     })
       .then(async () => {
         const formData = new FormData()
@@ -637,9 +656,10 @@ const deleteDroppedResource = async () => {
           formData.append('document_id', resource.id)
           url = '/api/course/delete-document'
         }
-        const response = await axiosInstance.delete(url, { data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+        const response = await axiosInstance.delete(url, { data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 5000 })
         if (response.data.success) {
           ElMessage.success('资源删除成功')
+          delete courseCache.value[props.course.id]
           await loadChapters()
         } else {
           ElMessage.error(response.data.message || '删除资源失败')
@@ -664,17 +684,18 @@ const resetDragState = () => {
 
 const deleteChapter = async (chapterId) => {
   try {
-    await ElMessageBox.confirm('确定删除该章节？删除后不可恢复', '提示', { 
+    await ElMessageBox.confirm('确定删除该章节？删除后不可恢复', '提示', {
       type: 'warning',
-      confirmButtonText: '确认', // 新增：确认按钮文字
-      cancelButtonText: '取消'   // 新增：取消按钮文字
+      confirmButtonText: '确认',
+      cancelButtonText: '取消'
     })
       .then(async () => {
         const formData = new FormData()
         formData.append('chapter_id', chapterId)
-        const res = await axiosInstance.delete('/api/course/delete-chapter', { data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+        const res = await axiosInstance.delete('/api/course/delete-chapter', { data: formData, headers: { 'Content-Type': 'multipart/form-data' }, timeout: 5000 })
         if (res.data.success) {
           ElMessage.success('章节删除成功')
+          delete courseCache.value[props.course.id]
           await loadChapters()
         } else {
           ElMessage.error(res.data.message || '删除章节失败')
@@ -777,7 +798,12 @@ const formatFileSize = (bytes) => {
   }
   return bytes.toFixed(2) + ' ' + units[i]
 }
-    
+
+const handleRefreshData = () => {
+  delete courseCache.value[props.course.id]
+  loadChapters()
+}
+
 onMounted(() => {
   if (props.course.id) loadChapters()
 })
@@ -792,12 +818,8 @@ watch(() => props.course.id, (newId) => {
   if (newId) loadChapters()
 })
 
-const handleRefreshData = () => {
-  loadChapters()
-}
-
 onUnmounted(() => {
-  // 清理资源
+  courseCache.value = {}
 })
 </script>
 
@@ -824,8 +846,6 @@ onUnmounted(() => {
   border-color: #2b6a3d;
   box-shadow: 0 2px 8px rgba(43, 106, 61, 0.3);
 }
-
-/* ... 其他样式 ... */
 
 /* PPT预览样式 */
 .ppt-preview {
@@ -892,11 +912,12 @@ onUnmounted(() => {
   padding: 15px;
 }
 
+/* 章节项样式 - 匹配第二个文件 */
 .chapter-item {
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  border: 2px solid #dcdfe6;
+  border-radius: 8px;
   margin-bottom: 8px;
-  padding: 12px;
+  padding: 8px;
   transition: all 0.3s ease;
   position: relative;
   background-color: #fff;
@@ -904,7 +925,7 @@ onUnmounted(() => {
 }
 
 .chapter-expanded {
-  border-color: #c0c4cc;
+  border-color: #2b6a3d;
 }
 
 .chapter-header {
@@ -916,26 +937,28 @@ onUnmounted(() => {
 .chapter-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   font-size: 16px;
   color: #333;
   line-height: 30px;
 }
 
+/* 关键修改1：将章节内容的虚线边框改为实线 */
 .chapter-content {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px dashed #dcdfe6;
+  border-top: 1px solid #dcdfe6;
 }
 
+/* 资源项样式 - 匹配第二个文件 */
 .resource-item {
   margin-bottom: 10px;
   padding-bottom: 10px;
-  border-bottom: 1px dashed #dcdfe6;
+  /* 关键修改2：将资源项的虚线边框改为实线 */
+  border-bottom: 1px solid #dcdfe6;
   transition: all 0.3s ease;
   cursor: pointer;
 }
-
 
 .resource-header {
   display: flex;
@@ -960,16 +983,27 @@ onUnmounted(() => {
   line-height: 30px;
 }
 
+/* 资源类型标签样式 - 匹配第二个文件 */
 .resource-type-tag {
-  font-size: 15px;
-  color: #2b6a3d;
-  background-color: #e6f7ed;
+  font-size: 14px;
+  font-weight:600;
+  color: #000000;
+  background-color: #2c824a;
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
   line-height: 30px;
-  margin-left: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
 } 
+
+/* 资源项hover时标签样式 - 匹配第二个文件 */
+.resource-item:hover .resource-type-tag,
+.resource-item.resource-hover .resource-type-tag {
+  color: #ffffff;
+  background-color: #2c824a;
+}
+
 .empty-resource {
   display: flex;
   align-items: center;
@@ -979,12 +1013,13 @@ onUnmounted(() => {
   font-size: 12px;
 }
 
+/* 关键修改3：将添加资料/章节的虚线边框改为实线 */
 .add-resource-dashed, .add-chapter-dashed {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 8px 12px;
-  border: 1px dashed #666;
+  border: 1px solid #666;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
@@ -1002,6 +1037,7 @@ onUnmounted(() => {
   margin: 15px 0;
 }
 
+/* 关键修改4：给删除区域添加黑色实线边框 */
 .trash-container {
   position: absolute;
   bottom: 15px;
@@ -1016,6 +1052,7 @@ onUnmounted(() => {
   box-sizing: border-box;
   transition: all 0.2s;
   z-index: 10;
+  border: 1px solid #000; /* 新增黑色边框 */
 }
 
 .trash-active {
@@ -1023,23 +1060,30 @@ onUnmounted(() => {
   transform: scale(1.02);
 }
 
+/* 预览区域样式 - 匹配第二个文件 */
 .preview-container {
-  background: #fff;
-  border-radius: 6px;
-  padding: 15px;
-  height: 100%;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.24);
+  width: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px 10px 0 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e9e5;
+  box-sizing: border-box;
+  min-height: calc(100vh - 320px);
+  overflow-y: auto;
 }
 
 .nav-title {
-  font-size: 25px;
+  font-size: 18px;
   color: #2b6a3d;
   margin: 0 0 15px 0;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #e5e5e5;
   font-weight: 600;
+  text-align: center;
 }
 
 .preview-body {
@@ -1067,42 +1111,47 @@ onUnmounted(() => {
   align-items: center;
 }
 
+/* 视频预览样式 - 匹配第二个文件 */
 .video-wrapper {
-  position: relative;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  width: 80%;
+  padding: 20px 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .video-wrapper video {
-  width: 100%;
-  height: auto;
-  display: block;
+  max-width: 100%;
+  max-height: 500px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
 }
 
 .video-error {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #f56c6c;
   font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 4px;
+  z-index: 1;
 }
 
+/* PDF预览样式 - 匹配第二个文件 */
 .pdf-container {
   border: 1px solid #e9ecef;
   border-radius: 4px;
   background-color: #f9f9f9;
   overflow: hidden;
   position: relative;
-  width: 750px;
-  height: 500px;
+  min-width: 800px;
+  height: 600px;
+  width: 110%;
 }
 
 .pdf-iframe {
@@ -1130,31 +1179,37 @@ onUnmounted(() => {
   color: #f56c6c;
 }
 
+/* 文本预览样式 - 匹配第二个文件 */
 .txt-preview .txt-content {
   width: 100%;
-  max-width: 800px;
-  background: #f7f8fa;
-  border: 1px solid #e5e7eb;
+  min-height: 300px;
+  max-height: 500px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
   border-radius: 4px;
-  padding: 1em;
-  overflow-x: auto;
+  background-color: #fff;
+  overflow-y: auto;
+  font-size: 14px;
   line-height: 1.6;
-  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #333;
 }
 
 .empty-preview {
-  font-size: 20px;
+  font-size: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
-  color: #999;
+  min-height: 500px;
+  color: #909399;
 }
 
 .chapter-index {
-  color: #2b6a3d;
   font-size: 18px;
+  color: #2b6a3d;
+  font-weight: 600;
   line-height: 30px;
 }
 
@@ -1173,10 +1228,11 @@ onUnmounted(() => {
   color: #333;
 }
 
+/* 文件信息样式 - 匹配第二个文件 */
 .file-info h4 {
   font-size: 16px;
   margin-bottom: 10px;
-  color: #2b6a3d;
+  color: #333;
 }
 
 .file-info p {
@@ -1185,10 +1241,12 @@ onUnmounted(() => {
   margin-bottom: 5px;
 }
 
+/* 预览操作按钮 - 匹配第二个文件 */
 .preview-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 15px;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
 }
 
 .text-2b6a3d { color: #2b6a3d !important; }
@@ -1250,10 +1308,6 @@ onUnmounted(() => {
   border-color: #dcdfe6 !important;
 }
 
-.el-input-number__input:focus {
-  border-color: #2b6a3d !important;
-}
-
 .el-skeleton__line {
   background-color: #e6f7ed !important;
 }
@@ -1289,17 +1343,16 @@ onUnmounted(() => {
   justify-content: left;
 }
 
-/* 文档预览核心样式 */
+/* 文档预览核心样式 - 匹配第二个文件 */
 .doc-preview {
   flex: 1;
-  max-height: calc(100vh - 300px);
+  max-height: 500px;
   overflow-y: auto;
   width: 95%;
   background: #fff;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  scrollbar-width: thin;
 }
 
 .doc-preview::-webkit-scrollbar { width: 6px; }
@@ -1321,13 +1374,6 @@ onUnmounted(() => {
   font-weight: 600;
   color: #333;
   margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.doc-actions {
-  display: flex;
-  gap: 10px;
 }
 
 .doc-content {
@@ -1422,5 +1468,22 @@ onUnmounted(() => {
 .error-doc .el-icon {
   font-size: 24px;
   margin-bottom: 10px;
+}
+
+/* 其他文件预览样式 */
+.other-document-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  min-height: 400px;
+}
+
+.file-icon {
+  color: #909399 !important;
+  margin-bottom: 20px;
 }
 </style>

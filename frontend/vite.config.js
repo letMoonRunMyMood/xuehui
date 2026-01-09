@@ -21,7 +21,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://sanative-couped-madge.ngrok-free.dev',
+        target: 'https://sanative-couped-madge.ngrok-free.dev ',
         changeOrigin: true,
         rewrite: (path) => {
           const newPath = path.replace(/^\/api/, '');

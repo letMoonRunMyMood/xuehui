@@ -101,8 +101,9 @@
   <el-dialog
     v-model="cropDialogVisible"
     title="裁剪封面图"
-    width="500px"
-    top="5vh"
+    width="800px"  
+    top="10vh"     
+    center       
     :before-close="handleCropClose"
   >
     <div class="cropper-container">
@@ -111,8 +112,8 @@
         :img="cropImgUrl"
         :info="true"
         :auto-crop="true"
-        :auto-crop-width="400"
-        :auto-crop-height="225"
+        :auto-crop-width="640"  
+        :auto-crop-height="360" 
         :fixed-box="true"
         :fixed-number="[16, 9]"
         :can-move="true"
@@ -132,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick, defineProps, defineEmits, onUnmounted, watch } from 'vue'; // 新增：导入watch
+import { ref, reactive, nextTick, onUnmounted, watch } from 'vue'; 
 import { ElMessage, ElMessageBox, ElIcon } from 'element-plus';
 import { PictureFilled } from '@element-plus/icons-vue';
 import { VueCropper } from 'vue-cropper';
@@ -186,9 +187,7 @@ const subjects = ref([
   { id: 7, name: '历史' }, { id: 8, name: '地理' }, { id: 9, name: '政治' }
 ]);
 
-// 修复点1：重置封面状态时，先判断DOM是否存在
 const resetCoverState = () => {
-  // 安全释放URL，避免内存泄漏
   if (previewUrl.value) {
     try { URL.revokeObjectURL(previewUrl.value); } catch (e) {}
     previewUrl.value = '';
@@ -199,21 +198,19 @@ const resetCoverState = () => {
   }
   croppedFile.value = null;
   
-  // 关键：先判断coverFileInput.value是否存在，再清空value
   if (coverFileInput.value) {
     coverFileInput.value.value = '';
   }
 };
 
-// 修复点2：替换原nextTick，改用watch监听visible变化（确保DOM挂载后再重置）
 watch(() => props.visible, (newVal) => {
   if (newVal) {
-    nextTick(() => { // 确保DOM已渲染
+    nextTick(() => {
       courseFormRef.value?.resetFields();
       resetCoverState();
     });
   }
-}, { immediate: true }); // 初始化时执行一次
+}, { immediate: true });
 
 const handleDialogClose = () => {
   emit('update:visible', false);
@@ -221,7 +218,6 @@ const handleDialogClose = () => {
 };
 
 const triggerCoverUpload = () => {
-  // 修复点3：触发上传前判断DOM是否存在
   if (coverFileInput.value) {
     coverFileInput.value.click();
   }
@@ -236,13 +232,11 @@ const handleCoverChange = (e) => {
 
   if (!allowedTypes.includes(file.type)) {
     ElMessage.error('请上传 PNG、JPG 或 JPEG 格式的图片');
-    // 修复点4：清空input前判断DOM
     if (coverFileInput.value) coverFileInput.value.value = '';
     return;
   }
   if (file.size > maxSize) {
     ElMessage.error('图片大小不能超过 10MB');
-    // 修复点4：清空input前判断DOM
     if (coverFileInput.value) coverFileInput.value.value = '';
     return;
   }
@@ -257,7 +251,6 @@ const handleCropClose = () => {
     cropImgUrl.value = '';
   }
   cropDialogVisible.value = false;
-  // 修复点5：清空input前判断DOM
   if (coverFileInput.value) coverFileInput.value.value = '';
 };
 
@@ -268,7 +261,6 @@ const confirmCrop = () => {
       return;
     }
     
-    // 修复点6：先判断input是否存在，再获取文件名
     const originalFileName = coverFileInput.value?.files[0]?.name || `cover_${Date.now()}.png`;
     const fileExtension = originalFileName.slice(originalFileName.lastIndexOf('.')) || '.png';
     const newFileName = `cropped_${Date.now()}${fileExtension}`;
@@ -386,7 +378,7 @@ onUnmounted(() => {
   display: none;
 }
 .cropper-container {
-  height: 300px;
+  height: 450px;  
 }
 .el-button {
   background-color: #4caf50;

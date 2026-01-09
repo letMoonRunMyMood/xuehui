@@ -51,6 +51,7 @@
         </div>
       </div>
 
+      <!-- 资料信息栏：同步老师端，减小高度 -->
       <div class="profile-details">
         <div class="detail-item">
           <span class="label">用户名:</span>
@@ -69,8 +70,21 @@
           <span class="value">{{ student.grade || '未设置' }}</span>
         </div>
       </div>
+
+      <!-- 新增：退出登录按钮（和老师端样式一致，靠右对齐） -->
+      <div class="logout-btn-wrap">
+        <el-button
+            type="danger"
+            size="large"
+            :style="{ padding: '12px 24px', fontSize: '16px' , background: '#f56c6c', borderColor: '#f56c6c'}"
+            @click="handleLogout"
+        >
+          <span>退出登录</span>
+        </el-button>
+      </div>
     </div>
 
+    <!-- 学生端表单窗口：完全保留原有样式（年级选择等），无任何改动 -->
     <el-dialog
         v-model="editDialogVisible"
         title="编辑个人资料"
@@ -354,6 +368,19 @@ const formatDate = (dateStr) => {
     return '';
   }
 };
+
+// 新增：退出登录核心方法（和老师端逻辑完全一致）
+const handleLogout = async () => {
+  try {
+    await axiosInstance.post('/api/auth/logout', {});
+    sessionStorage.clear();
+    ElMessage.success('已退出登录');
+    router.push('/auth');
+  } catch (error) {
+    console.error('退出登录失败', error);
+    ElMessage.error('退出登录失败，请稍后再试');
+  }
+};
 </script>
 
 <style scoped>
@@ -415,18 +442,20 @@ const formatDate = (dateStr) => {
   margin-left: 24px;
 }
 
+/* 同步老师端：减小资料信息栏高度 */
 .profile-details {
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
+  margin-bottom: 20px; /* 预留退出按钮空间 */
 }
 
 .detail-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   background-color: #f8fafc;
   border-radius: 8px;
-  padding: 16px 20px;
+  padding: 10px 20px; /* 减小内边距，降低单个资料项高度 */
   border: 1px solid #e5e9f2;
   transition: all 0.2s ease;
 }
@@ -440,13 +469,21 @@ const formatDate = (dateStr) => {
   font-weight: 500;
   color: #666;
   min-width: 100px;
-  font-size: 18px;
+  font-size: 16px; /* 减小字体大小，降低资料项高度 */
+  padding-top: 1px;
 }
 
 .detail-item .value {
   color: #333;
-  font-size: 18px;
+  font-size: 16px; /* 减小字体大小，降低资料项高度 */
   flex: 1;
+}
+
+/* 新增：退出登录按钮样式（和老师端完全一致，靠右对齐） */
+.logout-btn-wrap {
+  display: flex;
+  justify-content: flex-end; /* 靠右对齐 */
+  margin-top: 0;
 }
 
 .avatar-upload-container {
@@ -540,14 +577,14 @@ const formatDate = (dateStr) => {
   box-sizing: border-box;
 }
 
+.vue-cropper {
+  height: 400px;
+  margin-bottom: 20px;
+}
+
 @keyframes skeleton-loading {
   0% { background-color: #f0f0f0; }
   50% { background-color: #e0e0e0; }
   100% { background-color: #f0f0f0; }
-}
-
-.vue-cropper {
-  height: 400px;
-  margin-bottom: 20px;
 }
 </style>

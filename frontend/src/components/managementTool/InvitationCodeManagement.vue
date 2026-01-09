@@ -28,13 +28,13 @@
             :row-style="{ height: '50px' }"
         >
           <el-table-column prop="id" label="ID" width="120" align="center" />
-          <el-table-column prop="email" label="关联邮箱" width="300" align="center" />
+          <el-table-column prop="email" label="关联邮箱" width="200" align="center" />
           <el-table-column prop="invitation_code" label="邀请码" width="320" align="center" />
           <el-table-column prop="created_at" label="创建时间" width="210" align="center" />
           <el-table-column label="操作" width="185" align="center">
             <template #default="scope">
               <el-button
-                  type="text"
+                  type="link"
                   size="small"
                   @click="copyCode(scope.row.invitation_code)"
                   class="action-button copy-btn"

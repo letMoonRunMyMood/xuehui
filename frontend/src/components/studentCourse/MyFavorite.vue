@@ -30,10 +30,10 @@
             class="course-card"
             @click="viewCourseDetail(course.course_id)"
         >
-          <!-- 课程封面 -->
+          <!-- 课程封面：使用fixCoverPath修复路径 -->
           <div class="course-cover">
             <img
-                :src="course.course_cover || defaultCover"
+                :src="fixCoverPath(course.course_cover) || fixedDefaultCover"
                 alt="课程封面"
                 class="cover-image"
             >
@@ -106,20 +106,23 @@ import { ElMessage, ElMessageBox, ElIcon } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { Search, Document } from '@element-plus/icons-vue'
 import axiosInstance from '@/service/api.js'
+import { fixCoverPath } from '@/utils/format.js'
 
 const router = useRouter()
 const isLoading = ref(true)
 const studentId = ref(null)
-const defaultCover = 'https://picsum.photos/400/220?random=1'
 
-// 课程数据 - 同步订阅课程的分页数量（每页3条）
+const rawDefaultCover = ref('static/default/default_course_cover.jpg')
+const fixedDefaultCover = computed(() => fixCoverPath(rawDefaultCover.value))
+
+// 课程数据 - 同步订阅课程的分页数量
 const courses = ref([])
 const currentPage = ref(1)
 const pageSize = ref(3)  // 与订阅课程保持一致
 const totalCourses = ref(0)
 const searchKey = ref('')
 
-// 计算可见课程（带搜索筛选和分页）
+// 计算可见课程
 const visibleCourses = computed(() => {
   if (!Array.isArray(courses.value)) {
     return []
@@ -536,7 +539,7 @@ watch(studentId, (newId) => {
   color: #fff;
 }
 
-/* 响应式适配 - 与订阅课程保持一致 */
+/* 响应式适配 */
 @media (max-width: 1100px) {
   .cards-grid {
     grid-template-columns: repeat(3, 1fr);

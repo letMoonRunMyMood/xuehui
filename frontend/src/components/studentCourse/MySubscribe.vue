@@ -30,10 +30,10 @@
             class="course-card"
             @click="viewCourseContent(course.course_id)"
         >
-          <!-- 课程封面 -->
+          <!-- 课程封面：使用fixCoverPath修复路径 -->
           <div class="course-cover">
             <img
-                :src="course.course_cover || defaultCover"
+                :src="fixCoverPath(course.course_cover) || fixedDefaultCover"
                 alt="课程封面"
                 class="cover-image"
             >
@@ -106,11 +106,14 @@ import { ElMessage, ElMessageBox, ElIcon } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { Search, Document } from '@element-plus/icons-vue'
 import axiosInstance from '@/service/api.js'
+import { fixCoverPath } from '@/utils/format.js'
 
 const router = useRouter()
 const isLoading = ref(true)
 const studentId = ref(null)
-const defaultCover = 'https://picsum.photos/400/220?random=1'
+
+const rawDefaultCover = ref('static/default/default_course_cover.jpg')
+const fixedDefaultCover = computed(() => fixCoverPath(rawDefaultCover.value))
 
 // 课程数据
 const courses = ref([])

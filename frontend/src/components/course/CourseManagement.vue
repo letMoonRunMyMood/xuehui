@@ -532,7 +532,7 @@ watch(() => currentEditingCourse.id, (newId, oldId) => {
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  height: 95%;
+  height: 99%;
   will-change: transform, box-shadow;
 }
 
@@ -569,6 +569,7 @@ watch(() => currentEditingCourse.id, (newId, oldId) => {
 }
 
 .course-title {
+  min-height: 20px;
   font-size: 17px;
   font-weight: 600;
   color: #1f2937;
@@ -577,7 +578,6 @@ watch(() => currentEditingCourse.id, (newId, oldId) => {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 

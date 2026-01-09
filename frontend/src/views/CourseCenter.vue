@@ -37,7 +37,7 @@
                   :key="grade.id"
                   @click="handleGradeSelect(grade.id)"
                   :class="{ 'active': selectedGrade.includes(grade.id) }"
-                  type="text"
+                  type="link"
                 >
                   {{ grade.name }}
                 </el-button>
@@ -52,7 +52,7 @@
                   :key="subject.id"
                   @click="handleSubjectSelect(subject.id)"
                   :class="{ 'active': selectedSubject.includes(subject.id) }"
-                  type="text"
+                  type="link"
                 >
                   {{ subject.name }}
                 </el-button>
@@ -62,7 +62,7 @@
             <div class="filter-group date-group">
               <h3>时间范围</h3>
               <div class="date-filters">
-                <el-button @click="clearDateRange" type="text" class="filter-reset-button">全部</el-button>
+                <el-button @click="clearDateRange" type="link" class="filter-reset-button">全部</el-button>
                 <el-date-picker
                   v-model="startDate"
                   type="date"
@@ -83,7 +83,7 @@
             <div class="filter-group price-group">
               <h3>最高价格</h3>
               <div class="price-filters">
-                <el-button @click="resetMaxPrice" type="text" class="filter-reset-button">全部</el-button>
+                <el-button @click="resetMaxPrice" type="link" class="filter-reset-button">全部</el-button>
                 <el-input-number
                   v-model="maxPrice"
                   :min="0"
@@ -99,28 +99,28 @@
               <h3>排序方式</h3>
               <div class="sort-buttons">
                 <el-button
-                  type="text"
+                  type="link"
                   :class="{ 'active': activeSort === 'default' }"
                   @click="sortByDefault"
                 >
                   综合排序
                 </el-button>
                 <el-button
-                  type="text"
+                  type="link"
                   :class="{ 'active': activeSort === 'lowPrice' }"
                   @click="sortByLowPrice"
                 >
                   最低价格
                 </el-button>
                 <el-button
-                  type="text"
+                  type="link"
                   :class="{ 'active': activeSort === 'latest' }"
                   @click="sortByLatest"
                 >
                   最新发布
                 </el-button>
                 <el-button
-                  type="text"
+                  type="link"
                   :class="{ 'active': activeSort === 'mostSubscribed' }"
                   @click="sortByMostSubscribed"
                 >

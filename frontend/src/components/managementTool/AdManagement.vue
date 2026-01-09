@@ -26,7 +26,7 @@
         >
           <el-table-column prop="id" label="ID" width="120" align="center" />
           <el-table-column prop="name" label="广告名称" width="200" align="center" />
-          <el-table-column prop="link" label="广告链接" width="300" align="center">
+          <el-table-column prop="link" label="广告链接" width="200" align="center">
             <template #default="scope">
               <a :href="scope.row.link" target="_blank" class="truncated-link" :title="scope.row.link">
                 {{ scope.row.link }}
@@ -43,7 +43,7 @@
           <el-table-column label="操作" width="215" align="center">
             <template #default="scope">
               <el-button
-                type="text"
+                type="link"
                 size="small"
                 @click="previewAd(scope.row)"
                 class="action-button preview-btn"

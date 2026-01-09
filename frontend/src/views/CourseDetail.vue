@@ -60,8 +60,8 @@
                     class="enroll-button"
                     size="large"
                     :loading="buttonLoading || payLoading"
-                    :disabled="buttonLoading || favoriteLoading || payLoading"
-                    @click="handleButtonClick"
+                    :disabled="buttonLoading || favoriteLoading || payLoading || isSubscribed"
+                    @click="handleEnrollClick"
                   >
                     {{ buttonLoading ? '处理中...' : payLoading ? '支付中...' : (isSubscribed ? '进入课堂' : '立即报名') }}
                   </el-button>
@@ -154,35 +154,6 @@
       </div>
     </div>
 
-    <!-- 支付结果弹窗：脱离文档流，不影响滚动 -->
-    <el-dialog
-      v-model="paymentDialogVisible"
-      title="支付结果"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      :show-close="false"
-    >
-      <template #content>
-        <div class="payment-result">
-          <div class="result-icon" :class="paymentSuccess ? 'success' : paymentCancelled ? 'info' : 'error'">
-            <i :class="paymentSuccess ? 'el-icon-circle-check' : paymentCancelled ? 'el-icon-info' : 'el-icon-circle-close'"></i>
-          </div>
-          <p class="result-message">
-            {{ paymentSuccess ? '订阅成功！' : paymentCancelled ? '已取消支付' : '订阅失败' }}
-          </p>
-          <p class="result-detail">{{ paymentMessage }}</p>
-        </div>
-      </template>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="closePaymentDialog">关闭</el-button>
-          <el-button v-if="paymentSuccess" type="primary" @click="navigateToCourseContent">
-            进入课程
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-
     <!-- 页脚：固定到底部 -->
     <Footer class="footer-fixed"/>
   </div>
@@ -191,7 +162,7 @@
 <script setup>
 import { ref, onMounted, watch, nextTick, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElSkeleton, ElAlert, ElMessage, ElMessageBox, ElDialog, ElButton, ElIcon } from 'element-plus';
+import { ElSkeleton, ElAlert, ElMessage, ElMessageBox, ElButton, ElIcon } from 'element-plus';
 import { Star, Document } from '@element-plus/icons-vue';
 import NavigationBar from '../components/NavigationBar.vue';
 import axiosInstance from "@/service/api.js";
@@ -218,11 +189,11 @@ const recommendCourses = ref([]);
 // 支付相关状态
 const payLoading = ref(false);
 const orderId = ref('');
-const baseUrl = ref(`http://localhost:5173/course/${route.params.id}/content`);
-const paymentDialogVisible = ref(false);
-const paymentSuccess = ref(false);
-const paymentMessage = ref('');
-const paymentCancelled = ref(false);
+// ============== 关键修改1：修正 baseUrl 为【完整绝对路径】，移除 /content 后缀 ==============
+// 1. 拼接当前域名（window.location.origin），避免相对路径
+// 2. 指向课程详情页（/course/${route.params.id}），而非课程内容页
+// 3. 简洁可靠，无需 router.resolve 额外处理
+const baseUrl = ref(`${window.location.origin}/course/${route.params.id}`);
 let paymentCheckInterval = null;
 
 // 工具函数：安全转换为数字
@@ -271,17 +242,27 @@ const checkSubscription = async () => {
   const params = getSubscriptionParams();
   if (!params) {
     isSubscribed.value = false;
-    return;
+    return Promise.resolve(false);
   }
 
   try {
     buttonLoading.value = true;
     const response = await axiosInstance.get('/api/student/check-subscribe', { params });
-    if (response.data.success) isSubscribed.value = response.data.data.is_subscribed;
-    else ElMessage.error(response.data.message || '检查订阅状态失败');
+    if (response.data.success) {
+      isSubscribed.value = response.data.data.is_subscribed;
+      return Promise.resolve(isSubscribed.value);
+    } else {
+      ElMessage.error(response.data.message || '检查订阅状态失败');
+      isSubscribed.value = false;
+      return Promise.resolve(false);
+    }
   } catch (error) {
-    console.error('检查订阅状态失败:', error);
-    ElMessage.error('网络错误，请稍后再试');
+    if (error.name !== 'CanceledError') {
+      console.error('检查订阅状态失败:', error);
+      ElMessage.error('网络错误，请稍后再试');
+    }
+    isSubscribed.value = false;
+    return Promise.resolve(false);
   } finally {
     buttonLoading.value = false;
   }
@@ -301,8 +282,10 @@ const checkFavorite = async () => {
     if (response.data.success) isFavorited.value = response.data.data.is_favorited;
     else ElMessage.error(response.data.message || '检查收藏状态失败');
   } catch (error) {
-    console.error('检查收藏状态失败:', error);
-    ElMessage.error('网络错误，请稍后再试');
+    if (error.name !== 'CanceledError') {
+      console.error('检查收藏状态失败:', error);
+      ElMessage.error('网络错误，请稍后再试');
+    }
   } finally {
     favoriteLoading.value = false;
   }
@@ -341,87 +324,45 @@ const toggleFavorite = async () => {
       } else ElMessage.error(response.data.message || '收藏失败');
     }
   } catch (error) {
-    console.error('收藏操作失败:', error);
-    ElMessage.error('网络错误，请稍后再试');
+    if (error.name !== 'CanceledError') {
+      console.error('收藏操作失败:', error);
+      ElMessage.error('网络错误，请稍后再试');
+    }
   } finally {
     favoriteLoading.value = false;
   }
 };
 
-// 报名/支付按钮点击逻辑
-const handleButtonClick = async () => {
-  if (!isStudent.value) {
-    navigateToCourseContent();
-    return;
-  }
-
-  const params = getSubscriptionParams();
-  if (!params) {
-    ElMessage.error('请先登录');
-    router.push('/login');
-    return;
-  }
-
-  buttonLoading.value = true;
-
+const doSubscribeForFree = async (params) => {
   try {
-    if (isSubscribed.value) {
-      navigateToCourseContent();
-    } else {
-      const coursePrice = course.value.price || 0;
-      coursePrice <= 0 ? await subscribeForFree(params) : await createPaymentOrder(params);
-    }
-  } catch (error) {
-    console.error('操作失败:', error);
-  } finally {
-    buttonLoading.value = false;
-    nextTick(() => {
-      if (isStudent.value) {
-        checkSubscription();
-        checkFavorite();
-      }
-    });
-  }
-};
-
-// 免费课程订阅
-const subscribeForFree = async (params) => {
-  try {
-    await ElMessageBox.confirm('确定要订阅该免费课程吗？', '订阅确认', { confirmButtonText: '确认订阅', cancelButtonText: '取消' });
     payLoading.value = true;
     const response = await axiosInstance.post('/api/student/create-subscribe', params);
     if (response.data.success) {
-      showPaymentResult(true, false, '订阅成功！');
+      ElMessage.success('订阅成功！');
       isSubscribed.value = true;
-    } else showPaymentResult(false, false, response.data.message || '订阅失败');
+      navigateToCourseContent();
+    } else {
+      ElMessage.error(response.data.message || '订阅失败');
+    }
   } catch (error) {
-    console.error('订阅失败', error);
-    if (error.message === 'cancel') {
-      ElMessage.info('已取消订阅');
-      showPaymentResult(false, true, '已取消支付操作');
-    } else showPaymentResult(false, false, error.message || '订阅失败');
-    throw error;
+    console.error('订阅异常:', error);
+    ElMessage.error('订阅失败，请稍后再试');
   } finally {
     payLoading.value = false;
   }
 };
 
-// 创建付费课程支付订单
-const createPaymentOrder = async (params) => {
+// 【核心修改3】纯后端请求：创建付费支付订单（无二次确认，仅处理接口）
+const doCreatePaymentOrder = async (params) => {
+  const coursePrice = course.value.price || 0;
   try {
-    const coursePrice = course.value.price || 0;
-    await ElMessageBox.confirm(
-      `确定要支付 ¥${coursePrice.toFixed(2)} 订阅《${course.value.name || '该课程'}》吗？`,
-      '支付确认',
-      { type: 'warning', confirmButtonText: '确认支付', cancelButtonText: '取消' }
-    );
-
     payLoading.value = true;
     const formData = new FormData();
     formData.append('amount', coursePrice);
     formData.append('subject', course.value.name || '课程订阅');
     formData.append('student_id', toNumber(params.student_id));
     formData.append('course_id', toNumber(params.course_id));
+    // ============== 关键修改2：确保传递的 baseUrl 是修正后的完整绝对路径 ==============
     formData.append('base_url', baseUrl.value);
 
     const response = await axiosInstance.post('/api/pay/create_sandbox_order', formData, {
@@ -431,82 +372,167 @@ const createPaymentOrder = async (params) => {
     if (response.data.success) {
       orderId.value = response.data.order_id;
       const payUrl = response.data.pay_url;
-      const paymentStartTime = Date.now();
       const paymentWindow = window.open(payUrl, '_blank');
-      if (!paymentWindow) throw new Error('弹出窗口被阻止，请允许浏览器弹出窗口');
-      startPaymentCheck(paymentWindow, paymentStartTime);
-    } else showPaymentResult(false, false, response.data.message || '创建支付订单失败');
+      if (!paymentWindow) {
+        ElMessage.error('弹出窗口被阻止，请允许浏览器弹出窗口后重试');
+        return;
+      }
+      startPaymentCheck(paymentWindow, Date.now());
+    } else {
+      ElMessage.error(response.data.message || '创建支付订单失败');
+    }
   } catch (error) {
-    console.error('创建支付订单失败', error);
-    if (error.message === 'cancel') {
-      ElMessage.info('已取消支付操作');
-      showPaymentResult(false, true, '已取消支付操作');
-    } else showPaymentResult(false, false, error.message || '创建支付订单失败');
-    throw error;
+    console.error('创建支付订单异常:', error);
+    ElMessage.error('创建支付订单失败，请稍后再试');
   } finally {
     payLoading.value = false;
   }
 };
 
-// 检查支付状态（定时轮询）
+// 【核心修改1】「立即报名」点击事件：仅弹二次确认窗口，无后端请求
+const handleEnrollClick = () => {
+  const params = getSubscriptionParams();
+  // 前置条件判断（无权限/未登录）
+  if (!params) {
+    ElMessage.error('请先登录');
+    router.push('/login');
+    return;
+  }
+  if (isSubscribed.value) {
+    navigateToCourseContent();
+    return;
+  }
+
+  const coursePrice = course.value.price || 0;
+  // 区分免费/付费，弹出对应的二次确认窗口
+  if (coursePrice <= 0) {
+    // 免费课程二次确认
+    ElMessageBox.confirm(
+      '确定要订阅该免费课程吗？',
+      '订阅确认',
+      {
+        confirmButtonText: '确认订阅',
+        cancelButtonText: '取消',
+        type: 'info'
+      }
+    ).then(() => {
+      // 【关键】只有点击「确认订阅」，才触发后端接口
+      doSubscribeForFree(params);
+    }).catch(() => {
+      // 点击「取消」，仅关闭窗口，无任何操作、无任何日志
+      return;
+    });
+  } else {
+    // 付费课程二次确认
+    ElMessageBox.confirm(
+      `确定要支付 ¥${coursePrice.toFixed(2)} 订阅《${course.value.name || '该课程'}》吗？`,
+      '支付确认',
+      {
+        confirmButtonText: '确认支付',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    ).then(() => {
+      // 【关键】只有点击「确认支付」，才触发后端接口
+      doCreatePaymentOrder(params);
+    }).catch(() => {
+      // 点击「取消」，仅关闭窗口，无任何操作、无任何日志
+      return;
+    });
+  }
+};
+
+// 查询后端支付状态
+const checkPaymentStatus = async () => {
+  if (!orderId.value) return;
+  try {
+    const response = await axiosInstance.get(`/api/pay/query_sandbox_order/${orderId.value}`);
+    
+    if (response.data.success) {
+      const alipayResult = response.data.alipay_result;
+      if (alipayResult && alipayResult.trade_status === 'TRADE_SUCCESS') {
+        ElMessage.success('支付成功！');
+        isSubscribed.value = true;
+        navigateToCourseContent();
+      } else {
+        ElMessage.warning('订单未支付成功，请完成支付后再试');
+      }
+    } else {
+      ElMessage.error(response.data.message || '订单查询失败');
+    }
+  } catch (error) {
+    if (error.response?.status === 404) {
+      ElMessage.warning('订单不存在，可能已取消或过期');
+      return;
+    }
+    if (error.name !== 'CanceledError') {
+      console.error('检查支付状态失败:', error);
+      ElMessage.error('网络错误或支付接口未就绪，请稍后再试');
+    }
+  } finally {
+    orderId.value = '';
+    if (paymentCheckInterval) {
+      clearInterval(paymentCheckInterval);
+      paymentCheckInterval = null;
+    }
+  }
+};
+
+// 监听支付窗口关闭，触发状态查询
 const startPaymentCheck = (paymentWindow, startTime) => {
-  if (paymentCheckInterval) clearInterval(paymentCheckInterval);
-  const timeoutDuration = 3 * 60 * 1000;
+  if (paymentCheckInterval) {
+    clearInterval(paymentCheckInterval);
+  }
+  const timeoutDuration = 3 * 60 * 1000; // 30分钟超时
 
   paymentCheckInterval = setInterval(async () => {
     if (Date.now() - startTime > timeoutDuration) {
       clearInterval(paymentCheckInterval);
-      showPaymentResult(false, false, '支付超时，请重试');
+      paymentCheckInterval = null;
+      orderId.value = '';
+      ElMessage.warning('支付超时，请重新创建订单支付');
       return;
     }
 
     if (paymentWindow && paymentWindow.closed) {
       clearInterval(paymentCheckInterval);
-      checkPaymentStatus();
+      paymentCheckInterval = null;
+      await checkPaymentStatus();
       return;
     }
-
-    try {
-      if (orderId.value) {
-        showPaymentResult(true, false, '支付成功！');
-        return;
-      }
-    } catch (error) {
-      console.error('检查支付状态失败', error);
-    }
-  }, 3000);
+  }, 5000);
 };
 
-// 校验最终支付状态
-const checkPaymentStatus = async () => {
-  if (!orderId.value) return;
-  try {
-    showPaymentResult(true, false, '支付成功！');
-  } catch (error) {
-    console.error('检查支付状态失败', error);
-    showPaymentResult(false, false, '网络错误，请稍后再试');
-  }
-};
-
-// 显示支付结果弹窗
-const showPaymentResult = (success, cancelled, message) => {
-  paymentSuccess.value = success;
-  paymentCancelled.value = cancelled;
-  paymentMessage.value = message;
-  paymentDialogVisible.value = true;
-};
-
-// 关闭支付结果弹窗
-const closePaymentDialog = () => {
-  paymentDialogVisible.value = false;
-};
-
-// 跳转到课程内容页
+// 跳转课程内容
 const navigateToCourseContent = () => {
-  if (route.params.id) router.push(`/course/${route.params.id}/content`);
-  else {
+  const courseId = route.params.id;
+  if (!courseId) {
     console.error('课程ID不存在，无法跳转');
     ElMessage.error('课程ID不存在，无法跳转');
+    return;
+  }
+
+  if (isStudent.value) {
+    checkSubscription().then(() => {
+      if (isSubscribed.value) {
+        router.push(`/course/${courseId}/content`).catch(err => {
+          if (err.message !== 'cancel') {
+            console.error('课程内容跳转失败:', err);
+            ElMessage.error('跳转课程内容失败，请手动返回课程中心重试');
+          }
+        });
+      } else {
+        ElMessage.warning('您尚未订阅该课程，无法进入');
+        router.push(`/course/${courseId}`);
+      }
+    });
+  } else {
+    router.push(`/course/${courseId}/content`).catch(err => {
+      if (err.message !== 'cancel') {
+        console.error('课程内容跳转失败:', err);
+        ElMessage.error('跳转课程内容失败，请手动返回课程中心重试');
+      }
+    });
   }
 };
 
@@ -539,9 +565,11 @@ const fetchCourseData = async (courseId) => {
     if (response.data.success) {
       course.value = response.data.data;
       fetchRecommendCourses();
+      // ============== 关键修改3：路由参数变化时，更新 baseUrl ==============
+      baseUrl.value = `${window.location.origin}/course/${courseId}`;
     } else errorMessage.value = response.data.message || '获取课程详情失败';
   } catch (error) {
-    if (error.name !== 'AbortError') {
+    if (error.name !== 'CanceledError') {
       errorMessage.value = '网络错误，请重试';
       console.error('获取课程详情失败:', error);
     }
@@ -564,7 +592,8 @@ const fetchRecommendCourses = async () => {
     if (response.data.success) recommendCourses.value = response.data.data.courses || [];
     else console.warn('获取推荐课程失败:', response.data.message);
   } catch (error) {
-    console.error('获取推荐课程网络错误:', error);
+    console.warn('获取推荐课程网络错误:', error.message);
+    recommendCourses.value = [];
   }
 };
 
@@ -600,7 +629,11 @@ watch(
 
 onUnmounted(() => {
   if (courseRequestController.value) courseRequestController.value.abort();
-  if (paymentCheckInterval) clearInterval(paymentCheckInterval);
+  if (paymentCheckInterval) {
+    clearInterval(paymentCheckInterval);
+    paymentCheckInterval = null;
+  }
+  orderId.value = '';
 });
 </script>
 
@@ -991,37 +1024,6 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   color: #6b7280;
-}
-
-/* 支付结果弹窗 */
-:deep(.payment-result) {
-  text-align: center;
-  padding: 20px 0;
-}
-
-:deep(.result-icon) {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-:deep(.result-icon.success) {
-  color: #198754;
-}
-
-:deep(.result-icon.error) {
-  color: #dc3545;
-}
-
-:deep(.result-message) {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-:deep(.dialog-footer) {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
 }
 
 /* 空提示 */

@@ -10,7 +10,6 @@
               @click="handleCourseClick(item)"
           >
             <div class="course-cover">
-              <!-- 修复：添加fixCoverPath路径修复，保留默认封面逻辑 -->
               <img :src="fixCoverPath(item.cover) || defaultCover" alt="课程封面" class="cover-image" 
                 @load="handleImgLoad(item.id, item.cover)"
                 @error="handleImgError(item.id, item.cover)" />
@@ -57,7 +56,6 @@ import { useRouter } from 'vue-router'
 import { Document } from '@element-plus/icons-vue'
 import { ElSkeleton, ElIcon } from 'element-plus'
 import axiosInstance from "@/service/api.js";
-// 新增：导入路径修复方法
 import { fixCoverPath } from '@/utils/format.js'
 
 const router = useRouter()
@@ -80,44 +78,67 @@ const handleCourseClick = (course) => {
   })
 }
 
-// 新增：封面加载调试方法（保留原有console.log，新增调试信息）
-const handleImgLoad = (courseId, originalCover) => {
-  const processedPath = fixCoverPath(originalCover)
-  console.log(`课程${courseId}封面加载成功`, {
-    原始路径: originalCover,
-    修复后路径: processedPath
-  })
-}
-
-const handleImgError = (courseId, originalCover) => {
-  const processedPath = fixCoverPath(originalCover)
-  console.error(`课程${courseId}封面加载失败`, {
-    原始路径: originalCover,
-    修复后路径: processedPath,
-    默认封面: defaultCover
-  })
-}
+// 移除封面加载的调试日志（仅保留基础函数，无日志）
+const handleImgLoad = (courseId, originalCover) => {}
+const handleImgError = (courseId, originalCover) => {}
 
 const loadRecommendCourses = async () => {
+  // 1. 请求发起前：打印请求基础信息（参数、axios配置）
+  console.log('===== 【推荐课程接口】请求开始 =====')
+  console.log('请求参数：', { limit: 8 })
+  console.log('axios基础配置：', {
+    baseURL: axiosInstance.defaults.baseURL, // 查看代理/后端地址
+    withCredentials: axiosInstance.defaults.withCredentials // 查看是否携带Cookie
+  })
+
   isLoading.value = true
   try {
+    // 2. 发起请求：打印请求地址和状态
+    console.log('发起GET请求：/api/course/recommend')
     const response = await axiosInstance.get('/api/course/recommend', { params: { limit: 8 } })
+    
+    // 3. 请求成功：打印核心响应数据（重点！）
+    console.log('请求成功 - 响应状态码：', response.status)
+    console.log('请求成功 - 后端返回完整数据：', response.data)
+    console.log('请求成功 - success字段：', response.data?.success)
+    console.log('请求成功 - 课程列表数据：', response.data?.data?.courses)
+    
+    // 处理数据
     recommendCourses.value = response.data.success ? response.data.data.courses.slice(0, 8) : []
-    console.log('sdasfa')
-    // 新增：打印课程封面原始数据，方便调试
-    recommendCourses.value.forEach(course => {
-      console.log(`课程${course.id}原始封面路径:`, course.cover)
-      console.log(`课程${course.id}修复后封面路径:`, fixCoverPath(course.cover))
-    })
+    console.log('处理后最终课程数据：', recommendCourses.value)
+    console.log('最终课程数量：', recommendCourses.value.length)
+
   } catch (error) {
-    console.error('请求课程失败:', error)
+    // 4. 请求失败：分类打印错误（精准定位问题类型）
+    console.error('===== 【推荐课程接口】请求失败 =====')
+    if (error.response) {
+      // 后端返回了错误状态码（如401/404/500）
+      console.error('错误类型：后端返回错误状态码')
+      console.error('状态码：', error.response.status)
+      console.error('后端返回错误数据：', error.response.data)
+    } else if (error.request) {
+      // 请求发出但无响应（如ngrok拦截、网络问题、后端未启动）
+      console.error('错误类型：请求已发送，但未收到后端响应')
+      console.error('请求信息：', error.request)
+    } else {
+      // 请求配置错误（如URL错误、axios初始化问题）
+      console.error('错误类型：请求配置异常')
+      console.error('错误原因：', error.message)
+    }
+    console.error('请求配置详情：', error.config)
     recommendCourses.value = []
   } finally {
+    // 5. 请求结束：打印最终状态
+    console.log('===== 【推荐课程接口】请求结束 =====')
     isLoading.value = false
   }
 }
 
-onMounted(() => loadRecommendCourses())
+onMounted(() => {
+  // 组件挂载时触发请求的日志
+  console.log('组件挂载，开始调用推荐课程接口')
+  loadRecommendCourses()
+})
 </script>
 
 <style scoped>
