@@ -77,7 +77,7 @@ def get_comments_by_course(course_id):
                 'user_id': comment.user_id,
                 'user_name': user.username if user else '匿名用户',  # 用户名
                 'user_avatar': user.avatar if (user and user.avatar) else '',  # 头像
-                'user_role': user.role if user else -1,  # 角色（0=学生/1=教师/2=管理员）
+                'user_role': user.role if user else -1,  
                 'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                 'likes': comment.likes,
                 'total_likes': total_likes_query if total_likes_query else comment.likes,

@@ -64,6 +64,7 @@
           :step="0.01"
           placeholder="请输入课程价格（免费填0）"
           prefix="¥"
+          @input="handlePriceInput"
         />
       </el-form-item>
 
@@ -170,8 +171,24 @@ const courseRules = {
     { min: 10, max: 500, message: '课程简介长度在 10 到 500 个字符', trigger: 'blur' }
   ],
   price: [
-    { required: true, message: '请输入课程价格', trigger: 'blur' },
-    { type: 'number', min: 0, message: '价格不能为负数', trigger: 'blur' }
+    { required: true, message: '请输入课程价格', trigger: ['blur', 'input'] },
+    { 
+      validator: (rule, value, callback) => {
+        const inputValue = String(value).trim();
+        if (!inputValue) {
+          return callback(new Error('请输入课程价格'));
+        }
+        const numValue = Number(inputValue);
+        if (isNaN(numValue)) {
+          return callback(new Error('请输入有效的数字（如 0、9.99）'));
+        }
+        if (numValue < 0) {
+          return callback(new Error('价格不能为负数'));
+        }
+        callback();
+      },
+      trigger: ['blur', 'input']
+    }
   ],
   gradeId: [{ required: true, message: '请选择适用年级', trigger: 'change' }],
   subjectId: [{ required: true, message: '请选择所属学科', trigger: 'change' }]
@@ -276,6 +293,37 @@ const confirmCrop = () => {
   });
 };
 
+const handlePriceInput = () => {
+  // 移除负号
+  let priceValue = String(courseForm.price).replace(/-/g, '');
+  // 移除多余的小数点
+  priceValue = priceValue.replace(/(\.\d*)\./g, '$1');
+  // 处理纯小数点或空值情况，保证格式合理
+  if (priceValue === '.') {
+    priceValue = '0.';
+  } else if (!priceValue) {
+    priceValue = 0;
+  }
+
+  if (priceValue.includes('.')) {
+    const [integerPart, decimalPart] = priceValue.split('.');
+    // 整数部分：长度>1且以0开头，去除前置0（
+    const processedIntegerPart = integerPart.length > 1 && integerPart.startsWith('0') 
+      ? integerPart.replace(/^0+/, '') || '0'  
+      : integerPart;
+    priceValue = `${processedIntegerPart}.${decimalPart}`;
+  } else {
+    priceValue = priceValue.length > 1 && priceValue.startsWith('0') 
+      ? priceValue.replace(/^0+/, '') || '0'
+      : priceValue;
+  }
+
+  if (!priceValue) {
+    priceValue = '0';
+  }
+  courseForm.price = priceValue;
+};
+
 const submitCourseForm = async () => {
   try {
     await courseFormRef.value.validate();
@@ -294,6 +342,14 @@ const submitCourseForm = async () => {
     ElMessage.info('已取消创建');
     return;
   }
+
+  // 价格兜底判断，双重保障
+  const finalPrice = Number(courseForm.price);
+  if (isNaN(finalPrice) || finalPrice < 0) {
+    ElMessage.error('价格必须为非负有效数字');
+    return;
+  }
+  courseForm.price = finalPrice;
 
   const teacherId = sessionStorage.getItem('id');
   if (!teacherId) {
@@ -318,7 +374,6 @@ const submitCourseForm = async () => {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     if (response.data.success) {
-      ElMessage.success('课程创建成功！');
       emit('create', response.data.data);
       handleDialogClose();
     } else {
